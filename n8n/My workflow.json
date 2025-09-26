@@ -1,0 +1,335 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "664ddf40-35db-45c6-93c5-82d22f7f3b4f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "10db5466-6feb-4714-829e-6db6bb8605f1",
+      "name": "Webhook",
+      "webhookId": "664ddf40-35db-45c6-93c5-82d22f7f3b4f"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1OOUUGBwn0NBfTxIOu_KsD1wxlvrypfwzSgx3Sf6VEws",
+          "mode": "list",
+          "cachedResultName": "Credenciales",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OOUUGBwn0NBfTxIOu_KsD1wxlvrypfwzSgx3Sf6VEws/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OOUUGBwn0NBfTxIOu_KsD1wxlvrypfwzSgx3Sf6VEws/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID_Solicitud",
+              "displayName": "ID_Solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NombreCompleto",
+              "displayName": "NombreCompleto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RUT",
+              "displayName": "RUT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Carrera",
+              "displayName": "Carrera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asignatura",
+              "displayName": "Asignatura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "InstitucionOrigen",
+              "displayName": "InstitucionOrigen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FechaResolucion",
+              "displayName": "FechaResolucion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EnlaceDocumento",
+              "displayName": "EnlaceDocumento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "5af95980-278e-455d-990f-df4c0d3e8f96",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6hJ9Mtcm2WVUeLLB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "72bfa299-76c9-4dcf-9154-2417fd0689d1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "6d9f79ea-aa52-471e-b5d4-49c9cf91e946",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "eY04HnzT2vT2qSCT",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ae31af03-33b2-475f-9280-2b13f6b64681",
+              "leftValue": "={{$json.body.nombreArchivo}}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "897989ce-bfd6-4597-a240-c9727c5a540f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "emailFormat": "text",
+        "text": "No se puede analizar este archivo ya que no es un pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "ff090a59-75b7-4303-aa51-31e9afc457dd",
+      "name": "Send email",
+      "webhookId": "45b46f2b-8116-49c6-aa48-d23cf6e4a75e",
+      "credentials": {
+        "smtp": {
+          "id": "hh72xB5FzOpsR4EW",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "No es un PDF"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "6e9081ba-a75d-4428-8d6d-c91ba5304469",
+      "name": "Stop and Error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "afd55063-6c05-4abf-b2cb-9979255d551f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "359a1e8eab5006b6a715888a73c0b7433baeaf2495c4295c60a77fbac3a24c9f"
+  },
+  "id": "iIIjELoryKjVAdSg",
+  "tags": []
+}
