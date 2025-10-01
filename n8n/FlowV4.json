@@ -1,0 +1,815 @@
+{
+  "name": "FlowV4",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "solicitud-convalidacion",
+        "authentication": "basicAuth",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Webhook - Recepción",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        128
+      ],
+      "id": "1286efb7-c8d9-4703-9b5a-c6df095401d7",
+      "webhookId": "8fb4f1b8-4048-477c-9f27-9226aef1a9ee"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validación de campos requeridos\nconst requiredFields = ['nombre', 'carrera', 'materias', 'documentos'];\nconst errors = [];\n\nfor (const field of requiredFields) {\n  if (!$input.item.json[field]) {\n    errors.push(`Campo requerido: ${field}`);\n  }\n}\n\nif (errors.length > 0) {\n  return {\n    json: {\n      success: false,\n      errors: errors\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...$input.item.json,\n    documentosCompletos: true,\n    fechaSolicitud: new Date().toISOString()\n  }\n};"
+      },
+      "name": "Function - Validar",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        128
+      ],
+      "id": "eb636c4c-9c8d-41cf-8372-34c71ebb3722"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.documentosCompletos}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF - Documentación",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        128
+      ],
+      "id": "9fda1b9e-e2b8-4a13-b03b-e94f4f2bfeb7"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Comprueba que todos los archivos tengan extensión .pdf (case-insensitive)\nconst docs = $input.item.json.documentos || [];\nconst badFiles = [];\nfor (const d of docs) {\n  const fn = d.fileName || d.name || (d.url ? d.url.split('/').pop() : '');\n  if (!fn) continue;\n  if (!fn.toLowerCase().endsWith('.pdf')) {\n    badFiles.push(fn);\n  }\n}\nreturn { json: { ...$input.item.json, pdfsOk: badFiles.length === 0, badFiles } };"
+      },
+      "name": "Function - Check PDFs",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -80
+      ],
+      "id": "a472d92e-b195-4ee2-aa66-c1c5c8b45b85"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Registra el estado tras la validación\nconst status = $json.success === false ? 'Validación fallida' : 'Validado';\nconst details = $json.success === false ? ($json.errors || []).join('; ') : '';\nreturn { json: { ...$json, status, details, statusTimestamp: new Date().toISOString() } };"
+      },
+      "name": "Function - Status: Validación",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        128
+      ],
+      "id": "746c672b-54a5-4eb1-9490-d82f0db86529"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Registra el resultado de la comprobacion de PDFs\nconst status = $json.pdfsOk ? 'PDFs OK' : 'PDFs inválidos';\nconst details = ($json.badFiles || []).join(', ');\nreturn { json: { ...$json, status, details, statusTimestamp: new Date().toISOString() } };"
+      },
+      "name": "Function - Status: PDF Check",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -80
+      ],
+      "id": "cc30812b-4cb5-4db3-ba58-b87e514be603"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Estado: documentos almacenados\nreturn { json: { ...$input.item.json, status: 'Documentos almacenados', details: '', statusTimestamp: new Date().toISOString() } };"
+      },
+      "name": "Function - Status: Stored",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -416
+      ],
+      "id": "c08f7086-b41a-4b85-8ca6-681c5dc9ec22"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Estado: registro creado\nreturn { json: { ...$input.item.json, status: 'Registro creado', details: '', statusTimestamp: new Date().toISOString() } };"
+      },
+      "name": "Function - Status: Registered",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -256
+      ],
+      "id": "bb7b08f0-8c95-4036-9141-49f40cf6d640"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Estado: acta generada\nreturn { json: { ...$input.item.json, status: 'Acta generada', details: '', statusTimestamp: new Date().toISOString() } };"
+      },
+      "name": "Function - Status: Acta Generada",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        -240
+      ],
+      "id": "3d92f45d-6b62-49fa-bd03-e8d2308c3e3f"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "DB - Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -304
+      ],
+      "id": "781d8955-64ef-402d-a995-995cf866187c"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "DB - Log - Validación",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        128
+      ],
+      "id": "c480638f-565e-416e-bbf9-db5406c4e623"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "DB - Log - PDFCheck",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "90850cee-233c-4b3f-a3e5-9d8cbddfac33"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "={{$json.estudianteEmail}}",
+        "subject": "Archivo no válido",
+        "text": "Estimado alumno, el archivo enviado no es del formato adecuado .PDF",
+        "options": {}
+      },
+      "name": "Email - Not PDF",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -64
+      ],
+      "id": "e5d3bfc5-5db7-4584-97f9-ff23e6c71705"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Storage - Documentos",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -112
+      ],
+      "id": "5944c218-2a5e-40fc-87ae-86ee9a7c76ee"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "DB - Registro",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -304
+      ],
+      "id": "ec092456-e8a1-49ef-a791-bedc91cd7eef"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "={{$json.directorEmail}}",
+        "subject": "Nueva Solicitud de Convalidación",
+        "text": "=Plantilla de correo con datos",
+        "options": {}
+      },
+      "name": "Email - Director",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        -304
+      ],
+      "id": "01663451-8bd0-4914-a413-91d959554aa0"
+    },
+    {
+      "parameters": {
+        "path": "decision-director",
+        "options": {}
+      },
+      "name": "Webhook - Decisión",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -32
+      ],
+      "id": "77a12397-76af-4191-a68a-e5de1fd8c5a6",
+      "webhookId": "49443d5b-132d-4c24-946d-45fda9ea6ad1"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Procesar decisión del director\n// Se espera que la llamada al webhook incluya query params: decision y id\nconst decision = $input.item.json.query && $input.item.json.query.decision ? $input.item.json.query.decision : ($input.item.json.decision || null);\nconst solicitudId = $input.item.json.query && $input.item.json.query.id ? $input.item.json.query.id : ($input.item.json.solicitudId || null);\n\nreturn [{\n  json: {\n    decision,\n    solicitudId,\n    timestamp: new Date().toISOString(),\n    ...$input.item.json\n  }\n}];"
+      },
+      "name": "Function - Procesar Decisión",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        -32
+      ],
+      "id": "5b24c14a-c7e2-4691-a1df-559e8637f1a2"
+    },
+    {
+      "parameters": {},
+      "name": "Switch - Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        -64
+      ],
+      "id": "3c3d2ef1-1024-44da-b06f-db01808f348d"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "Sheets - Update Aceptada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        -240
+      ],
+      "id": "e602b6ee-fea6-4a74-bd54-b486413321a3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "Sheets - Update Rechazada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        -48
+      ],
+      "id": "782e0998-c3ed-4036-8aaa-ee79301938d9"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "Sheets - Update Revision",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        176
+      ],
+      "id": "e94f12c5-8712-4a22-9c15-d9661a35897c"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "={{$json.estudianteEmail}}",
+        "subject": "Solicitud Aceptada - Convalidación",
+        "text": "Estimado/a {{$json.nombre}},\n\nSu solicitud ha sido ACEPTADA. Se adjunta el acta de convalidación.",
+        "options": {}
+      },
+      "name": "Email - Estudiante Aceptada",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        -240
+      ],
+      "id": "33c16811-9db7-4fbb-8ab4-9d131c62c633"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "={{$json.estudianteEmail}}",
+        "subject": "Solicitud Rechazada - Convalidación",
+        "text": "Estimado/a {{$json.nombre}},\n\nSu solicitud ha sido RECHAZADA. Consulte las observaciones.",
+        "options": {}
+      },
+      "name": "Email - Estudiante Rechazada",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        -48
+      ],
+      "id": "1aff97c0-4c8e-46a9-aa04-e8f429f21f9d"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "comite@universidad.edu",
+        "subject": "Solicitud para Revisión Adicional",
+        "text": "Se solicita revisión adicional para la solicitud ID: {{$json.solicitudId}}",
+        "options": {}
+      },
+      "name": "Email - Comité Revision",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        176
+      ],
+      "id": "142cf051-3ab1-4eb1-9b41-935dac2c9fee"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "PDF - Generar Acta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        -240
+      ],
+      "id": "87f00c85-00a8-43b3-aa2d-e93b73077468"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@ejemplo.com",
+        "toEmail": "={{$json.estudianteEmail}}",
+        "subject": "Solicitud en revisión - Convalidación",
+        "text": "Estimado/a {{$json.nombre}},\n\nSu solicitud ha pasado a revisión adicional. Le notificaremos cuando haya una resolución.",
+        "options": {}
+      },
+      "name": "Email - Estudiante Revision",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        176
+      ],
+      "id": "752ed119-5bf9-4c21-b7ca-0b0dfe2fd19b"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "options": {}
+      },
+      "name": "DB - Histórico",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2912,
+        -48
+      ],
+      "id": "79bf4409-6e58-4d1c-8cd2-11a092e2b321"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.pdfsOk}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF - PDFs OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -80
+      ],
+      "id": "6784980e-325e-4e07-927f-211209e68132"
+    },
+    {
+      "parameters": {
+        "errorMessage": "El archivo no es .PDF"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -64
+      ],
+      "id": "a64c58cb-5f5f-4089-bae2-5e494e89ce4b",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "errorMessage": "El documento no es valido"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        144
+      ],
+      "id": "fb4130a3-6f14-4d99-be50-5bf466ac486d",
+      "name": "Stop and Error1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Recepción": {
+      "main": [
+        [
+          {
+            "node": "Function - Validar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Validar": {
+      "main": [
+        [
+          {
+            "node": "Function - Status: Validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Status: Validación": {
+      "main": [
+        [
+          {
+            "node": "DB - Log - Validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Log - Validación": {
+      "main": [
+        [
+          {
+            "node": "IF - Documentación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Documentación": {
+      "main": [
+        [
+          {
+            "node": "Function - Check PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Check PDFs": {
+      "main": [
+        [
+          {
+            "node": "Function - Status: PDF Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Status: PDF Check": {
+      "main": [
+        [
+          {
+            "node": "DB - Log - PDFCheck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Log - PDFCheck": {
+      "main": [
+        [
+          {
+            "node": "IF - PDFs OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Status: Stored": {
+      "main": [
+        [
+          {
+            "node": "DB - Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Status: Registered": {
+      "main": [
+        [
+          {
+            "node": "DB - Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Log": {
+      "main": [
+        [
+          {
+            "node": "Storage - Documentos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DB - Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Storage - Documentos": {
+      "main": [
+        [
+          {
+            "node": "Email - Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB - Registro": {
+      "main": [
+        [
+          {
+            "node": "Email - Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Decisión": {
+      "main": [
+        [
+          {
+            "node": "Function - Procesar Decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Procesar Decisión": {
+      "main": [
+        [
+          {
+            "node": "Switch - Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Decision": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Update Aceptada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets - Update Rechazada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets - Update Revision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Update Aceptada": {
+      "main": [
+        [
+          {
+            "node": "PDF - Generar Acta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF - Generar Acta": {
+      "main": [
+        [
+          {
+            "node": "Function - Status: Acta Generada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Status: Acta Generada": {
+      "main": [
+        [
+          {
+            "node": "Email - Estudiante Aceptada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Estudiante Aceptada": {
+      "main": [
+        [
+          {
+            "node": "DB - Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Update Rechazada": {
+      "main": [
+        [
+          {
+            "node": "Email - Estudiante Rechazada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Estudiante Rechazada": {
+      "main": [
+        [
+          {
+            "node": "DB - Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Update Revision": {
+      "main": [
+        [
+          {
+            "node": "Email - Comité Revision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Comité Revision": {
+      "main": [
+        [
+          {
+            "node": "Email - Estudiante Revision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Estudiante Revision": {
+      "main": [
+        [
+          {
+            "node": "DB - Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - PDFs OK?": {
+      "main": [
+        [
+          {
+            "node": "Function - Status: Registered",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Function - Status: Stored",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email - Not PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Not PDF": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ba9a32ed-4518-41b4-bef6-298d18683c26",
+  "meta": {
+    "instanceId": "359a1e8eab5006b6a715888a73c0b7433baeaf2495c4295c60a77fbac3a24c9f"
+  },
+  "id": "CHebM2XL0P74nNEl",
+  "tags": []
+}
