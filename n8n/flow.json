@@ -25,7 +25,7 @@
         },
         {
             "parameters": {
-                "functionCode": "// Validación de campos requeridos\nconst requiredFields = ['nombre', 'carrera', 'materias', 'documentos'];\nconst errors = [];\n\nfor (const field of requiredFields) {\n  if (!$input.item.json[field]) {\n    errors.push(`Campo requerido: ${field}`);\n  }\n}\n\nif (errors.length > 0) {\n  return {\n    json: {\n      success: false,\n      errors: errors\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...$input.item.json,\n    documentosCompletos: true,\n    fechaSolicitud: new Date().toISOString()\n  }\n};"
+                "functionCode": "// Validación de campos requeridos según especificaciones TXT\nconst requiredFields = ['nombre', 'rut', 'carrera', 'asignatura', 'institucionOrigen', 'documentos'];\nconst errors = [];\n\nfor (const field of requiredFields) {\n  if (!$input.item.json[field]) {\n    errors.push(`Campo requerido: ${field}`);\n  }\n}\n\nif (errors.length > 0) {\n  return {\n    json: {\n      success: false,\n      errors: errors\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...$input.item.json,\n    documentosCompletos: true,\n    fechaSolicitud: new Date().toISOString(),\n    id: $input.item.json.rut || 'ID-' + Date.now()\n  }\n};"
             },
             "name": "Function - Validar",
             "type": "n8n-nodes-base.function",
@@ -206,6 +206,22 @@
                         "value": "={{$json.nombre}}"
                     },
                     {
+                        "column": "RUT",
+                        "value": "={{$json.rut}}"
+                    },
+                    {
+                        "column": "Carrera",
+                        "value": "={{$json.carrera}}"
+                    },
+                    {
+                        "column": "Asignatura",
+                        "value": "={{$json.asignatura}}"
+                    },
+                    {
+                        "column": "InstitucionOrigen",
+                        "value": "={{$json.institucionOrigen}}"
+                    },
+                    {
                         "column": "Estado",
                         "value": "Pendiente"
                     }
@@ -220,8 +236,8 @@
             "parameters": {
                 "fromEmail": "sistema@ejemplo.com",
                 "toEmail": "={{$json.directorEmail}}",
-                "subject": "Nueva Solicitud de Convalidación",
-                "text": "=Plantilla de correo con datos"
+                "subject": "Nueva Solicitud de Convalidación - {{$json.asignatura}}",
+                "text": "Estimado/a Director/a,\n\nSe ha recibido una nueva solicitud de convalidación:\n\n• Estudiante: {{$json.nombre}}\n• RUT: {{$json.rut}}\n• Carrera: {{$json.carrera}}\n• Asignatura a convalidar: {{$json.asignatura}}\n• Institución de origen: {{$json.institucionOrigen}}\n• Fecha de solicitud: {{$json.fechaSolicitud}}\n\nPara revisar la documentación adjunta y tomar una decisión, acceda al siguiente enlace:\n\nhttp://localhost:5678/webhook/decision-director?id={{$json.id}}&decision=Aceptada\nhttp://localhost:5678/webhook/decision-director?id={{$json.id}}&decision=Rechazada\nhttp://localhost:5678/webhook/decision-director?id={{$json.id}}&decision=Revisión Adicional\n\nSaludos cordiales,\nSistema Automatizado de Convalidaciones"
             },
             "name": "Email - Director",
             "type": "n8n-nodes-base.emailSend",
@@ -324,8 +340,8 @@
             "parameters": {
                 "fromEmail": "sistema@ejemplo.com",
                 "toEmail": "={{$json.estudianteEmail}}",
-                "subject": "Solicitud Aceptada - Convalidación",
-                "text": "Estimado/a {{$json.nombre}},\n\nSu solicitud ha sido ACEPTADA. Se adjunta el acta de convalidación." 
+                "subject": "Solicitud Aceptada - Convalidación de {{$json.asignatura}}",
+                "text": "Estimado/a {{$json.nombre}},\n\nNos complace informarle que su solicitud de convalidación ha sido ACEPTADA.\n\nDetalles de la convalidación:\n• Asignatura: {{$json.asignatura}}\n• Institución de origen: {{$json.institucionOrigen}}\n• Fecha de resolución: {{$json.timestamp}}\n\nSe adjunta el acta de resolución generada automáticamente.\n\nSaludos cordiales,\nDirección Académica" 
             },
             "name": "Email - Estudiante Aceptada",
             "type": "n8n-nodes-base.emailSend",
@@ -336,8 +352,8 @@
             "parameters": {
                 "fromEmail": "sistema@ejemplo.com",
                 "toEmail": "={{$json.estudianteEmail}}",
-                "subject": "Solicitud Rechazada - Convalidación",
-                "text": "Estimado/a {{$json.nombre}},\n\nSu solicitud ha sido RECHAZADA. Consulte las observaciones." 
+                "subject": "Solicitud Rechazada - Convalidación de {{$json.asignatura}}",
+                "text": "Estimado/a {{$json.nombre}},\n\nLamentamos informarle que su solicitud de convalidación ha sido RECHAZADA.\n\nDetalles de la solicitud:\n• Asignatura solicitada: {{$json.asignatura}}\n• Institución de origen: {{$json.institucionOrigen}}\n• Fecha de resolución: {{$json.timestamp}}\n• Motivo: {{$json.observaciones || 'No se cumplieron los requisitos académicos establecidos'}}\n\nPara mayor información, puede contactar a la Dirección Académica.\n\nSaludos cordiales,\nDirección Académica" 
             },
             "name": "Email - Estudiante Rechazada",
             "type": "n8n-nodes-base.emailSend",
@@ -434,7 +450,34 @@
         },
         {
             "parameters": {
-                "operation": "append"
+                "operation": "append",
+                "sheetName": "Historico",
+                "columns": [
+                    {
+                        "column": "Estudiante",
+                        "value": "={{$json.nombre}}"
+                    },
+                    {
+                        "column": "AsignaturaConvalidada",
+                        "value": "={{$json.asignatura}}"
+                    },
+                    {
+                        "column": "InstitucionOrigen",
+                        "value": "={{$json.institucionOrigen}}"
+                    },
+                    {
+                        "column": "EstadoFinal",
+                        "value": "={{$json.decision}}"
+                    },
+                    {
+                        "column": "FechaResolucion",
+                        "value": "={{$json.timestamp}}"
+                    },
+                    {
+                        "column": "RUT",
+                        "value": "={{$json.rut}}"
+                    }
+                ]
             },
             "name": "DB - Histórico",
             "type": "n8n-nodes-base.googleSheets",
