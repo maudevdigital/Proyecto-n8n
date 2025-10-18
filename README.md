@@ -1,19 +1,31 @@
-# Convalidaciones con n8n
+# 🎓 Sistema de Gestión de Convalidaciones Académicas - UNAB
 
-## 🎯 Visión
-Automatizar el proceso de convalidaciones estudiantiles usando **n8n + Google Drive + Google Sheets + Gmail**.
+## 📋 Descripción
+Sistema automatizado para gestionar solicitudes de convalidación de asignaturas en la Universidad Andrés Bello, implementado con n8n + Google Workspace.
 
-## 👥 Roles
-- **PO (Product Owner):** Felipe A.
-- **SM (Scrum Master):** Franco L.
-- **Dev–Tester (pares):**
-  - lucasmaulenr ⇄ Felipe Vergara R.
+## 👥 Equipo
+- **PO:** Felipe A.
+- **SM:** Franco L.
+- **Developers:**
+  - Lucas Maulen (HU-01) ⇄ Felipe Vergara R.
   - maticata0111-bit ⇄ lucasmaulenr
 
-## ⚙️ Cómo correr n8n en Docker
+## 📁 Estructura del Proyecto
+
+```
+├── developer/lucas/     # HU-01: Recepción de Solicitud ✅ COMPLETADO
+│   ├── README.md       # 📖 Documentación completa
+│   ├── flow_HU01.json  # Flujo n8n
+│   ├── formulario-convalidacion-unab.html  # Formulario web
+│   └── test_hu01.sh    # Pruebas automatizadas
+├── n8n/                # Configuración n8n
+└── docker-compose.yml  # Docker setup
+```
+
+## 🚀 Quick Start
+
+### Iniciar n8n:
 ```bash
-docker run -it --rm \
-  -p 5678:5678 \
-  -v ~/.n8n:/home/node/.n8n \
-  n8nio/n8n
+docker-compose up -d
+# Acceder: http://localhost:5678
 
