@@ -1,188 +1,374 @@
-# 🎓 Gestor de Convalidaciones Académicas - UNAB# HU-01: Recepción de Solicitud de Convalidación
+# 🎓 Gestor de Convalidaciones Académicas - UNAB# 🎓 Gestor de Convalidaciones Académicas - UNAB# HU-01: Recepción de Solicitud de Convalidación
 
 
 
-Sistema automatizado para la recepción, validación y procesamiento de solicitudes de convalidación académica utilizando n8n.## 📋 Descripción
-
-Sistema automatizado para recibir, validar y procesar solicitudes de convalidación de asignaturas de estudiantes universitarios.
-
-## 📋 Historia de Usuario 01 (HU-01)
-
-## 🎯 Historia de Usuario
-
-**Como** estudiante de la UNAB  **Como** estudiante universitario,    
-
-**Quiero** enviar mi solicitud de convalidación a través de un formulario web  **Quiero** un formulario web para ingresar mis datos y adjuntar documentos de respaldo,    
-
-**Para que** sea recibida, validada y registrada automáticamente en el sistema**Para** iniciar el proceso de convalidación de forma digital y centralizada.
+Sistema automatizado para la recepción, validación y procesamiento de solicitudes de convalidación académica utilizando n8n.
 
 
 
-## 🚀 Inicio Rápido## ✅ Criterios de Aceptación
+## 📋 Historia de Usuario 01 (HU-01)Sistema automatizado para la recepción, validación y procesamiento de solicitudes de convalidación académica utilizando n8n.## 📋 Descripción
 
 
 
-### 1. Iniciar n8n### Escenario 1 – Envío exitoso con todos los datos  
+**Como** estudiante de la UNAB  Sistema automatizado para recibir, validar y procesar solicitudes de convalidación de asignaturas de estudiantes universitarios.
 
-✅ **IMPLEMENTADO**
+**Quiero** enviar mi solicitud de convalidación a través de un formulario web  
 
-```bash- Todos los campos completados correctamente
+**Para que** sea recibida, validada y registrada automáticamente en el sistema## 📋 Historia de Usuario 01 (HU-01)
 
-docker-compose up -d- Documento PDF adjunto
 
-```- Sistema registra en Google Sheets
 
-- Envía email de confirmación
+## 🚀 Inicio Rápido## 🎯 Historia de Usuario
+
+
+
+### 1. Iniciar n8n**Como** estudiante de la UNAB  **Como** estudiante universitario,    
+
+
+
+```bash**Quiero** enviar mi solicitud de convalidación a través de un formulario web  **Quiero** un formulario web para ingresar mis datos y adjuntar documentos de respaldo,    
+
+docker-compose up -d
+
+```**Para que** sea recibida, validada y registrada automáticamente en el sistema**Para** iniciar el proceso de convalidación de forma digital y centralizada.
+
+
 
 n8n estará disponible en: http://localhost:5678
 
-### Escenario 2 – Intento de envío sin adjuntar documento  
 
-### 2. Importar el Workflow✅ **IMPLEMENTADO**
 
-- Formulario muestra mensaje de error
+### 2. Importar el Workflow## 🚀 Inicio Rápido## ✅ Criterios de Aceptación
 
-1. Accede a n8n (http://localhost:5678)- No se procesa la solicitud
+
+
+1. Accede a n8n (http://localhost:5678)
 
 2. Ve a: Menú → Import from File
 
-3. Selecciona: `flow_HU01.json`### Escenario 3 – Intento de envío con formato incorrecto  
+3. Selecciona: `flow_HU01.json`### 1. Iniciar n8n### Escenario 1 – Envío exitoso con todos los datos  
 
-4. Configura las credenciales necesarias✅ **IMPLEMENTADO**
+4. Configura las credenciales necesarias
 
-5. Activa el workflow- Sistema rechaza archivos no-PDF
+5. Activa el workflow✅ **IMPLEMENTADO**
 
-- Notifica que solo se aceptan PDFs
 
-### 3. Iniciar el Servidor del Formulario
 
-## 🏗️ Arquitectura del Sistema
+### 3. Iniciar el Servidor del Formulario```bash- Todos los campos completados correctamente
 
-```bash
 
-python3 -m http.server 8080### Flujo Completo:
 
-```1. **Formulario Web** → Estudiante ingresa datos
+```bashdocker-compose up -d- Documento PDF adjunto
 
-2. **Validación Cliente** → JavaScript valida PDF y campos
+python3 -m http.server 8080
 
-Formulario disponible en: http://localhost:8080/formulario-convalidacion-unab.html3. **Webhook n8n** → Recibe datos vía POST
+``````- Sistema registra en Google Sheets
 
-4. **Validación Servidor** → n8n valida campos obligatorios
 
-### 4. Ejecutar Pruebas5. **Google Sheets** → Guarda en hoja "Solicitudes"
 
-6. **Google Sheets** → Registra log en hoja "Logs"
+Formulario disponible en: http://localhost:8080/formulario-convalidacion-unab.html- Envía email de confirmación
+
+
+
+### 4. Ejecutar Pruebasn8n estará disponible en: http://localhost:5678
+
+
+
+```bash### Escenario 2 – Intento de envío sin adjuntar documento  
+
+./test_hu01.sh
+
+```### 2. Importar el Workflow✅ **IMPLEMENTADO**
+
+
+
+## 📁 Estructura del Proyecto- Formulario muestra mensaje de error
+
+
+
+```1. Accede a n8n (http://localhost:5678)- No se procesa la solicitud
+
+Proyecto-n8n/
+
+├── docker-compose.yml                                # Configuración de n8n2. Ve a: Menú → Import from File
+
+├── flow_HU01.json                                    # Workflow de n8n para HU-01
+
+├── formulario-convalidacion-unab.html               # Formulario web UNAB3. Selecciona: `flow_HU01.json`### Escenario 3 – Intento de envío con formato incorrecto  
+
+├── test_hu01.sh                                      # Script de pruebas automatizadas
+
+├── README.md                                         # Este archivo4. Configura las credenciales necesarias✅ **IMPLEMENTADO**
+
+│
+
+├── Proyecto-Gestor-Convalidaciones-Academicas.txt   # 📄 Especificaciones del proyecto5. Activa el workflow- Sistema rechaza archivos no-PDF
+
+├── sprint1.txt                                       # 📄 Contexto del Sprint 1
+
+│- Notifica que solo se aceptan PDFs
+
+├── HU-01_FICHA_TECNICA.md                           # Especificación técnica
+
+├── HU-01_CASOS_PRUEBA.md                            # Casos de prueba### 3. Iniciar el Servidor del Formulario
+
+├── HU-01_RESULTADOS_PRUEBAS.md                      # Resultados de pruebas
+
+├── HU-01_RESUMEN_FINAL.md                           # Resumen ejecutivo## 🏗️ Arquitectura del Sistema
+
+│
+
+└── n8n/                                              # Datos persistentes de n8n```bash
+
+    ├── database.sqlite                               # Base de datos (workflows, credenciales)
+
+    ├── binaryData/                                   # Archivos binariospython3 -m http.server 8080### Flujo Completo:
+
+    ├── nodes/                                        # Nodos personalizados
+
+    ├── config                                        # Configuración```1. **Formulario Web** → Estudiante ingresa datos
+
+    └── CONFIGURACION_APIS.md                        # Guía de configuración de APIs
+
+```2. **Validación Cliente** → JavaScript valida PDF y campos
+
+
+
+## 📄 Archivos de ContextoFormulario disponible en: http://localhost:8080/formulario-convalidacion-unab.html3. **Webhook n8n** → Recibe datos vía POST
+
+
+
+### `Proyecto-Gestor-Convalidaciones-Academicas.txt`4. **Validación Servidor** → n8n valida campos obligatorios
+
+Especificaciones generales del proyecto, incluyendo:
+
+- Objetivo del sistema### 4. Ejecutar Pruebas5. **Google Sheets** → Guarda en hoja "Solicitudes"
+
+- Alcance del proyecto
+
+- Historias de usuario planificadas6. **Google Sheets** → Registra log en hoja "Logs"
+
+- Requisitos funcionales
 
 ```bash7. **Email SMTP** → Envía confirmación al estudiante
 
-./test_hu01.sh8. **Respuesta JSON** → Retorna resultado al formulario
+### `sprint1.txt`
 
-```
+Documentación específica del Sprint 1:./test_hu01.sh8. **Respuesta JSON** → Retorna resultado al formulario
 
-## 📁 Archivos del Proyecto
+- HU-01: Recepción de Solicitud
 
-## 📁 Estructura del Proyecto
+- Criterios de aceptación```
 
-### `/developer/lucas/`
+- Definición de terminado
 
-``````
+- Detalles de implementación## 📁 Archivos del Proyecto
 
-Proyecto-n8n/├── flow_HU01.json                      # Flujo completo de n8n
 
-├── docker-compose.yml                    # Configuración de n8n├── formulario-convalidacion-unab.html  # Formulario web con colores UNAB
 
-├── flow_HU01.json                        # Workflow de n8n para HU-01├── test_hu01.sh                        # Script de pruebas automatizadas
+## ⚙️ Configuración## 📁 Estructura del Proyecto
 
-├── formulario-convalidacion-unab.html   # Formulario web UNAB├── sprint1.txt                         # Documentación Sprint 1
 
-├── test_hu01.sh                          # Script de pruebas automatizadas├── Proyecto-Gestor-Convalidaciones-Academicas.txt  # Especificaciones
 
-├── README.md                             # Este archivo└── README.md                           # Este archivo
+### Credenciales Necesarias### `/developer/lucas/`
 
-│```
 
-├── HU-01_FICHA_TECNICA.md               # Especificación técnica
 
-├── HU-01_CASOS_PRUEBA.md                # Casos de prueba## 🚀 Cómo Usar
+#### 1. Google Sheets API (OAuth2)``````
 
-├── HU-01_RESULTADOS_PRUEBAS.md          # Resultados de pruebas
+- Ver guía completa en: `n8n/CONFIGURACION_APIS.md`
 
-├── HU-01_RESUMEN_FINAL.md               # Resumen ejecutivo### 1. Importar el Flujo en n8n
-
-│```bash
-
-└── n8n/                                  # Datos persistentes de n8n# En n8n, ir a: Import from File
-
-    ├── database.sqlite                   # Base de datos (workflows, credenciales)# Seleccionar: flow_HU01.json
-
-    ├── binaryData/                       # Archivos binarios```
-
-    ├── nodes/                            # Nodos personalizados
-
-    ├── config                            # Configuración### 2. Configurar Credenciales
-
-    └── CONFIGURACION_APIS.md            # Guía de configuración de APIs
-
-```#### Google Sheets OAuth2:
-
-1. Settings > Credentials > Google Sheets OAuth2 API
-
-## ⚙️ Configuración2. Configurar Client ID y Client Secret
-
-3. Autorizar acceso
-
-### Credenciales Necesarias
-
-#### SMTP (Ethereal Email para pruebas):
-
-#### 1. Google Sheets API (OAuth2)1. Ir a: https://ethereal.email/create
-
-- Ver guía completa en: `n8n/CONFIGURACION_APIS.md`2. Copiar credenciales generadas
-
-- Crear proyecto en Google Cloud Console3. Configurar en n8n
+- Crear proyecto en Google Cloud ConsoleProyecto-n8n/├── flow_HU01.json                      # Flujo completo de n8n
 
 - Habilitar APIs: Google Sheets + Google Drive
 
+- Configurar OAuth2 y agregar usuario de prueba├── docker-compose.yml                    # Configuración de n8n├── formulario-convalidacion-unab.html  # Formulario web con colores UNAB
+
+
+
+#### 2. SMTP para Emails├── flow_HU01.json                        # Workflow de n8n para HU-01├── test_hu01.sh                        # Script de pruebas automatizadas
+
+- **Opción 1 (Producción):** Gmail con App Password
+
+- **Opción 2 (Testing):** Ethereal Email├── formulario-convalidacion-unab.html   # Formulario web UNAB├── sprint1.txt                         # Documentación Sprint 1
+
+- Configurar credenciales en n8n
+
+├── test_hu01.sh                          # Script de pruebas automatizadas├── Proyecto-Gestor-Convalidaciones-Academicas.txt  # Especificaciones
+
+### Webhook
+
+├── README.md                             # Este archivo└── README.md                           # Este archivo
+
+- **URL de Producción:** `http://localhost:5678/webhook/solicitud-convalidacion`
+
+- **Método:** POST│```
+
+- **Content-Type:** application/json
+
+├── HU-01_FICHA_TECNICA.md               # Especificación técnica
+
+## 🧪 Casos de Prueba
+
+├── HU-01_CASOS_PRUEBA.md                # Casos de prueba## 🚀 Cómo Usar
+
+El script `test_hu01.sh` ejecuta automáticamente:
+
+├── HU-01_RESULTADOS_PRUEBAS.md          # Resultados de pruebas
+
+- ✅ **TC1.1:** Solicitud válida completa
+
+- ✅ **TC1.2:** Campo obligatorio faltante├── HU-01_RESUMEN_FINAL.md               # Resumen ejecutivo### 1. Importar el Flujo en n8n
+
+- ✅ **TC1.3:** Múltiples campos faltantes
+
+- ✅ **TC5.1:** Caracteres especiales en nombres│```bash
+
+- ✅ **TC2.1:** Verificación de email de confirmación
+
+└── n8n/                                  # Datos persistentes de n8n# En n8n, ir a: Import from File
+
+Ver detalles en: `HU-01_CASOS_PRUEBA.md`
+
+    ├── database.sqlite                   # Base de datos (workflows, credenciales)# Seleccionar: flow_HU01.json
+
+## 📊 Funcionalidad Implementada
+
+    ├── binaryData/                       # Archivos binarios```
+
+### Flujo de Trabajo (Workflow)
+
+    ├── nodes/                            # Nodos personalizados
+
+1. **Recepción:** Webhook recibe solicitud POST
+
+2. **Validación:** Verifica campos obligatorios y formato PDF    ├── config                            # Configuración### 2. Configurar Credenciales
+
+3. **Registro:** Almacena en Google Sheets (hoja "Solicitudes")
+
+4. **Logging:** Registra evento en Google Sheets (hoja "Logs")    └── CONFIGURACION_APIS.md            # Guía de configuración de APIs
+
+5. **Notificación:** Envía email de confirmación al estudiante
+
+6. **Respuesta:** Retorna JSON con resultado```#### Google Sheets OAuth2:
+
+
+
+### Campos Validados1. Settings > Credentials > Google Sheets OAuth2 API
+
+
+
+- Nombre completo del estudiante## ⚙️ Configuración2. Configurar Client ID y Client Secret
+
+- RUT (formato chileno)
+
+- Email institucional3. Autorizar acceso
+
+- Carrera actual
+
+- Asignatura a convalidar### Credenciales Necesarias
+
+- Institución de origen
+
+- Certificado de notas (PDF)#### SMTP (Ethereal Email para pruebas):
+
+
+
+## 🔒 Persistencia de Datos#### 1. Google Sheets API (OAuth2)1. Ir a: https://ethereal.email/create
+
+
+
+Los datos de n8n (workflows, credenciales, ejecuciones) se almacenan en:- Ver guía completa en: `n8n/CONFIGURACION_APIS.md`2. Copiar credenciales generadas
+
+```
+
+./n8n/database.sqlite- Crear proyecto en Google Cloud Console3. Configurar en n8n
+
+```
+
+- Habilitar APIs: Google Sheets + Google Drive
+
+**Importante:** Esta carpeta garantiza que tu configuración persista entre reinicios.
+
 - Configurar OAuth2 y agregar usuario de prueba### 3. Levantar Formulario Web
+
+## 📝 Documentación Adicional
 
 ```bash
 
-#### 2. SMTP para Emailscd /workspaces/Proyecto-n8n/developer/lucas
+- **Ficha Técnica:** `HU-01_FICHA_TECNICA.md`
 
-- **Opción 1 (Producción):** Gmail con App Passwordpython3 -m http.server 8080
+- **Casos de Prueba:** `HU-01_CASOS_PRUEBA.md`#### 2. SMTP para Emailscd /workspaces/Proyecto-n8n/developer/lucas
+
+- **Resultados:** `HU-01_RESULTADOS_PRUEBAS.md`
+
+- **Resumen Final:** `HU-01_RESUMEN_FINAL.md`- **Opción 1 (Producción):** Gmail con App Passwordpython3 -m http.server 8080
+
+- **Configuración APIs:** `n8n/CONFIGURACION_APIS.md`
 
 - **Opción 2 (Testing):** Ethereal Email# Acceder a: http://localhost:8080/formulario-convalidacion-unab.html
 
+## 🛠️ Comandos Útiles
+
 - Configurar credenciales en n8n```
-
-
-
-### Webhook### 4. Ejecutar Pruebas
 
 ```bash
 
-- **URL de Producción:** `http://localhost:5678/webhook/solicitud-convalidacion`chmod +x test_hu01.sh
+# Iniciar n8n
+
+docker-compose up -d
+
+### Webhook### 4. Ejecutar Pruebas
+
+# Detener n8n
+
+docker-compose down```bash
+
+
+
+# Ver logs de n8n- **URL de Producción:** `http://localhost:5678/webhook/solicitud-convalidacion`chmod +x test_hu01.sh
+
+docker-compose logs -f
 
 - **Método:** POST./test_hu01.sh
 
-- **Content-Type:** application/json```
+# Reiniciar n8n
+
+docker-compose restart- **Content-Type:** application/json```
 
 
+
+# Ejecutar pruebas
+
+./test_hu01.sh
 
 ## 🧪 Casos de Prueba## 🧪 Casos de Prueba
 
+# Servidor para formulario
 
+python3 -m http.server 8080
+
+```
 
 El script `test_hu01.sh` ejecuta automáticamente:### TC1.1 - Caso Válido Completo
 
+## 👥 Equipo
+
 **Input:**
 
-- ✅ **TC1.1:** Solicitud válida completa```json
+**Desarrollador:** Lucas Maulén Riquelme  
+
+**Email:** l.maulnriquelme@uandresbello.edu  - ✅ **TC1.1:** Solicitud válida completa```json
+
+**Institución:** Universidad Andrés Bello (UNAB)
 
 - ✅ **TC1.2:** Campo obligatorio faltante{
 
+## 📄 Licencia
+
 - ✅ **TC1.3:** Múltiples campos faltantes  "nombre": "María Elena Rodríguez",
+
+Proyecto académico - UNAB 2025
 
 - ✅ **TC5.1:** Caracteres especiales en nombres  "rut": "20.111.222-3",
 
