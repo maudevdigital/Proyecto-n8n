@@ -1,0 +1,430 @@
+{
+  "name": "HU-001",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "solicitud-convalidacion",
+        "responseMode": "lastNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Webhook - Recepción",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 960],
+      "id": "fe131b0c-f091-4086-8b93-36adfdd7dd08",
+      "webhookId": "0bb0b401-c93d-44db-b804-48ea7bd064f1"
+    },
+    {
+      "parameters": {
+        "functionCode": "// HU-01: Validación de campos requeridos\nconst requiredFields = ['nombre', 'rut', 'carrera', 'asignatura', 'institucionOrigen', 'documentos'];\nconst errors = [];\nconst data = $input.item.json.body || $input.item.json;\n\n// Validar campos obligatorios\nfor (const field of requiredFields) {\n  if (!data[field] || data[field].toString().trim() === '') {\n    errors.push(`Campo requerido: ${field}`);\n  }\n}\n\n// Si hay errores, retornar respuesta de error\nif (errors.length > 0) {\n  return {\n    json: {\n      success: false,\n      errors: errors,\n      message: 'Faltan campos obligatorios',\n      code: 400\n    }\n  };\n}\n\n// Si todo está bien, procesar y agregar metadatos\nconst result = Object.assign({}, data, {\n  success: true,\n  documentosCompletos: true,\n  fechaSolicitud: new Date().toISOString(),\n  id: 'SOL-' + data.rut.replace(/[^0-9]/g, '') + '-' + Date.now(),\n  estado: 'Recibida'\n});\n\nreturn { json: result };"
+      },
+      "name": "Function - Validar Campos",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [224, 960],
+      "id": "49cc1cbf-ec9e-4670-b0c6-6935399d8151"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.success}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF - Validación OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [448, 960],
+      "id": "fa5f8ccf-36cd-4671-88c8-13cb4dd23a80"
+    },
+    {
+      "parameters": {
+        "functionCode": "// HU-01: Validar formato de documentos PDF\nconst data = $input.item.json;\nconst docs = data.documentos;\nlet pdfsOk = true;\nlet badFiles = [];\n\n// Si documentos es string, asumir que es nombre de archivo\nif (typeof docs === 'string') {\n  if (!docs.toLowerCase().endsWith('.pdf')) {\n    pdfsOk = false;\n    badFiles.push(docs);\n  }\n} else if (Array.isArray(docs)) {\n  // Si es array, validar cada archivo\n  for (const doc of docs) {\n    const fileName = doc.fileName || doc.name || doc;\n    if (typeof fileName === 'string' && !fileName.toLowerCase().endsWith('.pdf')) {\n      pdfsOk = false;\n      badFiles.push(fileName);\n    }\n  }\n}\n\nconst result = Object.assign({}, data, {\n  pdfsOk: pdfsOk,\n  badFiles: badFiles,\n  validacionPDF: pdfsOk ? 'Documentos válidos' : 'Documentos inválidos'\n});\n\nreturn { json: result };"
+      },
+      "name": "Function - Validar PDF",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [672, 864],
+      "id": "517de3ae-cd9b-44cb-99dc-ef647d6fa7c4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.pdfsOk}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF - PDF Válido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [896, 864],
+      "id": "fe061240-8e58-45e7-9871-ff014a924927"
+    },
+    {
+      "parameters": {
+        "functionCode": "// HU-01: Preparar datos LIMPIOS para Solicitudes\n// Solo campos relevantes, SIN campos técnicos\nconst data = $input.item.json;\n\nreturn {\n  json: {\n    id: data.id,\n    fecha: data.fechaSolicitud,\n    estudiante: data.nombre,\n    rut: data.rut,\n    carrera: data.carrera,\n    asignatura: data.asignatura,\n    institucionOrigen: data.institucionOrigen,\n    documentos: data.documentos,\n    email: data.email || '',\n    estado: data.estado\n  }\n};"
+      },
+      "name": "Preparar Datos Solicitudes",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1120, 672],
+      "id": "preparar-solicitudes-clean"
+    },
+    {
+      "parameters": {
+        "functionCode": "// HU-01: Preparar datos LIMPIOS para Log\n// Solo información relevante del evento\nconst data = $input.item.json;\n\nreturn {\n  json: {\n    timestamp: data.fechaSolicitud,\n    id: data.id,\n    evento: 'Solicitud Recibida',\n    estudiante: data.nombre,\n    estado: data.estado,\n    detalles: 'HU-01: Recepción exitosa - Asignatura: ' + data.asignatura + ' - Institución: ' + data.institucionOrigen\n  }\n};"
+      },
+      "name": "Preparar Datos Log",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1120, 1056],
+      "id": "preparar-log-clean"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY",
+          "mode": "list",
+          "cachedResultName": "Sistema Convalidaciones Académicas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 392534325,
+          "mode": "list",
+          "cachedResultName": "Solicitudes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY/edit#gid=392534325"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{$json.id}}",
+            "fecha": "={{$json.fecha}}",
+            "estudiante": "={{$json.estudiante}}",
+            "rut": "={{$json.rut}}",
+            "carrera": "={{$json.carrera}}",
+            "asignatura": "={{$json.asignatura}}",
+            "institucionOrigen": "={{$json.institucionOrigen}}",
+            "documentos": "={{$json.documentos}}",
+            "email": "={{$json.email}}",
+            "estado": "={{$json.estado}}"
+          },
+          "matchingColumns": ["id"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "DB-Registro",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1344, 672],
+      "id": "3b090b16-a076-4352-92dd-901f3f1a1799",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZM6AB0udQM5h68On",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY",
+          "mode": "list",
+          "cachedResultName": "Sistema Convalidaciones Académicas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FWnWVXKy8mKIbO2JloHav9y7rYJYpVIqM1qcVhtg0yY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$json.timestamp}}",
+            "id": "={{$json.id}}",
+            "evento": "={{$json.evento}}",
+            "estudiante": "={{$json.estudiante}}",
+            "estado": "={{$json.estado}}",
+            "detalles": "={{$json.detalles}}"
+          },
+          "matchingColumns": ["id"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "name": "DB-Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1344, 1056],
+      "id": "32076f39-dc1b-494b-8cf7-c41f7ebd2785",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZM6AB0udQM5h68On",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "agskacbo6tt32dnt@ethereal.email",
+        "toEmail": "={{$json.email || 'estudiante@ejemplo.com'}}",
+        "subject": "=Confirmación de Recepción - Solicitud {{$json.id}}",
+        "text": "=Estimado/a {{$json.nombre}},\n\nHemos recibido correctamente su solicitud de convalidación con los siguientes datos:\n\n• ID de Solicitud: {{$json.id}}\n• Fecha de Recepción: {{$json.fechaSolicitud}}\n• Asignatura: {{$json.asignatura}}\n• Institución de Origen: {{$json.institucionOrigen}}\n• Estado: {{$json.estado}}\n\nPróximos pasos:\n1. Su solicitud será revisada por la Dirección Académica\n2. Recibirá una notificación cuando haya una decisión\n3. El proceso puede tomar entre 5-10 días hábiles\n\nPara consultas, puede contactarnos indicando su ID de solicitud.\n\nSaludos cordiales,\nSistema Automatizado de Convalidaciones\nUniversidad Andrés Bello",
+        "options": {}
+      },
+      "name": "Email-Confirmación",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 864],
+      "id": "a475ad5e-4b5e-41ef-80b7-cb16902cd527",
+      "webhookId": "543d7b2e-f886-43a5-8598-a859a1687361",
+      "credentials": {
+        "smtp": {
+          "id": "5PwfuVROJgdj9gpi",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "agskacbo6tt32dnt@ethereal.email",
+        "toEmail": "={{$json.email || 'estudiante@ejemplo.com'}}",
+        "subject": "Error en Documentos - Solicitud de Convalidación",
+        "text": "=Estimado/a {{$json.nombre}},\n\nHemos detectado un problema con los documentos adjuntos en su solicitud:\n\n• Archivos con formato incorrecto: {{$json.badFiles.join(', ')}}\n\nRequisitos de documentos:\n- Solo se aceptan archivos en formato PDF\n- Asegúrese de que todos los documentos tengan extensión .pdf\n\nPor favor, reenvíe su solicitud con los documentos en formato correcto.\n\nSaludos cordiales,\nSistema Automatizado de Convalidaciones\nUniversidad Andrés Bello",
+        "options": {}
+      },
+      "name": "Email-Error PDF",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 1248],
+      "id": "ee59af05-9fad-4cb9-8880-c0f4c8161ef4",
+      "webhookId": "3fc4f0c5-0ac7-4d17-8a5d-d65a3faf0133",
+      "credentials": {
+        "smtp": {
+          "id": "5PwfuVROJgdj9gpi",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Respuesta de error para solicitudes inválidas\nconst data = $input.item.json;\n\nreturn {\n  json: {\n    success: false,\n    message: data.message || 'Error en la validación',\n    errors: data.errors || ['Error desconocido'],\n    code: data.code || 400\n  }\n};"
+      },
+      "name": "Function-Error Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [672, 1152],
+      "id": "d2b00664-e397-4796-9ad8-a47a7b1b7536"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preservar datos originales de la solicitud\n// Buscar el item que tiene los datos completos (viene de IF - PDF Válido)\nfor (const item of $input.all()) {\n  if (item.json.id && item.json.fechaSolicitud && item.json.nombre) {\n    return item;\n  }\n}\n\n// Si no se encuentra, retornar el primer item\nreturn $input.first();"
+      },
+      "name": "Sincronizar - Preservar Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1568, 864],
+      "id": "sync-preserve-data-123"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Respuesta exitosa tras procesar la solicitud\nconst data = $input.item.json;\n\nreturn {\n  json: {\n    success: true,\n    message: 'Solicitud recibida y procesada correctamente',\n    id: data.id,\n    fechaSolicitud: data.fechaSolicitud,\n    estado: data.estado || 'Recibida',\n    proximosPasos: 'Recibirá notificación por email con el estado de su solicitud',\n    tiempoEstimado: '5-10 días hábiles',\n    code: 200\n  }\n};"
+      },
+      "name": "Function-Success Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1792, 864],
+      "id": "01c7148a-a34c-4e48-b977-6a44ae1adff2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Recepción": {
+      "main": [
+        [
+          {
+            "node": "Function - Validar Campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Validar Campos": {
+      "main": [
+        [
+          {
+            "node": "IF - Validación OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Validación OK": {
+      "main": [
+        [
+          {
+            "node": "Function - Validar PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Function-Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Validar PDF": {
+      "main": [
+        [
+          {
+            "node": "IF - PDF Válido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - PDF Válido": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Solicitudes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Datos Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email-Confirmación",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sincronizar - Preservar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email-Error PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Solicitudes": {
+      "main": [
+        [
+          {
+            "node": "DB-Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Log": {
+      "main": [
+        [
+          {
+            "node": "DB-Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB-Registro": {
+      "main": [
+        [
+          {
+            "node": "Sincronizar - Preservar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB-Log": {
+      "main": [
+        [
+          {
+            "node": "Sincronizar - Preservar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email-Confirmación": {
+      "main": [
+        [
+          {
+            "node": "Sincronizar - Preservar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sincronizar - Preservar Datos": {
+      "main": [
+        [
+          {
+            "node": "Function-Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "hu01-v2-clean-fixed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e12e9c5344554c6d82d3bb4081a33310a0487cdff8bb15f5c462553d0b81d0e0"
+  },
+  "id": "nrruAUEZ17i9YCPA",
+  "tags": []
+}
